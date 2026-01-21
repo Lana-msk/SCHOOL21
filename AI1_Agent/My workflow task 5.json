@@ -1,0 +1,203 @@
+{
+  "name": "My workflow task 5",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        96
+      ],
+      "id": "244540d9-9c15-4708-8f9d-5bbf1126155a",
+      "name": "Telegram Trigger",
+      "webhookId": "76d86c6b-26d8-411c-b19d-149e6f1b83ca",
+      "credentials": {
+        "telegramApi": {
+          "id": "OfwTmW7mJgNUsWtN",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "Ты — персональный ИИ-ментор по IT-навыкам и подготовке к собеседованиям. Твоя задача — помогать пользователю структурировать обучение и давать полезные материалы.\n\n1. Если пользователь только начинает диалог, задай вопрос: \"Привет! Чему бы ты хотел научиться в рамках учебного проекта или подготовки к собеседованию?\" Уточни его текущий уровень: начинающий, средний, продвинутый.\n\n2. На основе ответа пользователя (тема и уровень) создай контент-план в виде списка тем для изучения. Каждая тема должна содержать перечень ключевых понятий.\n\nФормат плана:\nТема 1: [понятие 1, понятие 2, понятие 3...]\nТема 2: [понятие 1, понятие 2, понятие 3...]\nВсего должно быть 2 темы.\nДалее спроси пользователя \"Сохранить план?\" при ответе \"да\" переходи к следующему шагу, при ответе \"нет\" - возвращайся к шагу 1.\n3. Для каждого поста (когда бот отправляет материал) выбери одно ещё не разобранное понятие из плана и создай небольшой обучающий пост (3–5 предложений), объясняющий это понятие простым языком, с примером или аналогией.\n\nНе повторяй темы/понятия, которые уже были разобраны.\nПосле завершения всех тем спроси: \"Все темы изучены! Что ты хочешь изучать дальше?\"\n\nДля поиска понятий используй Tool Search in Tavily."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1136,
+        144
+      ],
+      "id": "051753fb-3269-4037-aeab-70cff3fb4c76",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        432
+      ],
+      "id": "5cc3982d-3c2e-41ce-b64b-e78c0b13dc32",
+      "name": "Search in Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "s3HPZsPTVB4E7L6f",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "GigaChat/GigaChat-2-Max",
+          "mode": "list",
+          "cachedResultName": "GigaChat/GigaChat-2-Max"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        448
+      ],
+      "id": "eb0276c5-7552-4ada-adfc-c5304aac311e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "GTKTII4CN77IDBBJ",
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1648,
+        128
+      ],
+      "id": "bfd6284b-b43c-41ca-8695-127fe7813237",
+      "name": "Send a text message",
+      "webhookId": "c689123c-ed2c-44ea-899d-58551308a619",
+      "credentials": {
+        "telegramApi": {
+          "id": "OfwTmW7mJgNUsWtN",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={}",
+        "contextWindowLength": 1000
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1104,
+        592
+      ],
+      "id": "2fd5359c-e51c-459b-8d60-45b32786132f",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3c3cf9ca-ac97-4b41-8e18-8522122a4c21",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0f81146710bdf4632469143d2c8720eb23efc1946ae644ae48a05cce89faa924"
+  },
+  "id": "0OG3hD3SvDbNkoEz",
+  "tags": []
+}

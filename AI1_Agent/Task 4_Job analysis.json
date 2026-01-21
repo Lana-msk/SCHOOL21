@@ -1,0 +1,178 @@
+{
+  "name": "Task 4_Job analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtHour": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -848,
+        -256
+      ],
+      "id": "18163e87-a073-4a00-a825-ba68b3a0be69",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.hh.ru/vacancies",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "professional_role",
+              "value": "124"
+            },
+            {
+              "name": "area",
+              "value": "1"
+            },
+            {
+              "name": "per_page",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -608,
+        -256
+      ],
+      "id": "2d805b1d-06ce-40db-a0f4-197578f0e1dc",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "chatId": "-1003467362554",
+        "text": "={{ $json.output }}\n\n\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        -256
+      ],
+      "id": "3dc38a2c-c5ce-4aed-808a-de5a944a6c71",
+      "name": "Telegram",
+      "webhookId": "f13e48d9-f4fa-4e23-bdea-c6c03494b53f",
+      "credentials": {
+        "telegramApi": {
+          "id": "s0Fyh4lvAnAnBmUL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=РОЛЬ:\nТы — автоматический агент по анализу вакансий с сайта HH.ru.\nТвоя задача — извлекать только чёткие профессиональные навыки и требования из описаний вакансий.\n\nТРЕБОВАНИЯ К РАБОТЕ:\n 1. Работай строго со входным текстом.\nНе выдумывай навыки, не обобщай, не добавляй ничего вне описания вакансии.\n 2. Из описания вакансии извлекай:\n • профессиональные навыки\n • технические требования\n • языки программирования\n • технологии\n • инструменты\n • методологии\n • стеки\n 3. Запрещено включать в результат:\n • обязанности\n • личностные качества\n • общие фразы (“работа в команде”, “коммуникабельность”)\n • одноразовые фразы (“желателен опыт”, “будет плюсом”)\n • названия компаний\n • зарплаты\n • графики работы\n 4. Все навыки должны быть приведены к нормализованному виду:\n • python / Питон → python\n • js / JavaScript → javascript\n • C# / c sharp → c#\n • машинное обучение / ML → machine learning\n • postgre / postgres / PostgreSQL → postgresql\n\nФорма/сценарий дайджеста должна выглядеть так:\n\nНа этой неделе я спарсил N свежих вакансий. \nСамыми популярными являются следующие требования:\n\nтребование 1: количество раз\n\nтребование 2: количество раз\n\nтребование 3: количество раз\n\nВыведи только 15 наиболее часто встречающихся требований.\n\nОписание вакансии:\n0: {{ $json.items[0].snippet.requirement }} {{ $json.items[0].snippet.responsibility }}\n1: {{ $json.items[1].snippet.requirement }} {{ $json.items[1].snippet.responsibility }}\n2: {{ $json.items[2].snippet.requirement }} {{ $json.items[2].snippet.responsibility }}\n3: {{ $json.items[3].snippet.requirement }} {{ $json.items[3].snippet.responsibility }}\n4: {{ $json.items[4].snippet.requirement }} {{ $json.items[4].snippet.responsibility }}\n5: {{ $json.items[5].snippet.requirement }} {{ $json.items[5].snippet.responsibility }}\n6: {{ $json.items[6].snippet.requirement }} {{ $json.items[6].snippet.responsibility }}\n7: {{ $json.items[7].snippet.requirement }} {{ $json.items[7].snippet.responsibility }}\n8: {{ $json.items[8].snippet.requirement }} {{ $json.items[8].snippet.responsibility }}\n9: {{ $json.items[9].snippet.requirement }} {{ $json.items[9].snippet.responsibility }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -352,
+        -256
+      ],
+      "id": "468912d5-8244-43cd-b45d-512ccf5d3794",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "GigaChat/GigaChat-2-Max",
+          "mode": "list",
+          "cachedResultName": "GigaChat/GigaChat-2-Max"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -416,
+        -32
+      ],
+      "id": "1423fc42-9efa-4c2e-b1cb-b0a5659cc11a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "GTKTII4CN77IDBBJ",
+          "name": "OpenAI"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "329a3e44-7b66-4c01-9d61-94ae540b847c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0f81146710bdf4632469143d2c8720eb23efc1946ae644ae48a05cce89faa924"
+  },
+  "id": "GVl5H6s1lnzqNCQb",
+  "tags": []
+}

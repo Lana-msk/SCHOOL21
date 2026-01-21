@@ -1,0 +1,279 @@
+{
+  "name": "My workflow task 3",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ты — лаконичный summarizer.\n\nВот данные постов в формате JSON:\n{{ JSON.stringify($json.posts, null, 2) }}\n\nСделай итоговый текст в следующем формате:\n\nЕжедневный дайджест:\n\n{Название канала}\n• {Заголовок поста} — {краткое описание, 1 предложение}\nСсылка: {link}\n\n• {Заголовок второго поста} — {краткое описание}\nСсылка: {link}\n\n---\n\nПравила:\n- Не используй ### или другие Markdown-заголовки.\n- Первая строка всегда должна быть ровно: \"Ежедневный дайджест:\".\n- Название канала берётся из поля channelName. Если его нет — пропусти канал полностью.\n- Никакой выдуманной информации. Только title, contentSnippet (если есть) и link.\n- Если contentSnippet содержит мусор (\"Feed generated…\") — игнорируй его.\n- Если описания нет — используй title как краткое описание.\n- Формат строгий:  \n  {Название канала} на отдельной строке,  \n  два пункта по два поста — каждый с точкой в конце описания.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -144,
+        -128
+      ],
+      "id": "ee1f5a10-bc2c-4f8e-a402-864b6242e579",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 13
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1056,
+        -128
+      ],
+      "id": "cdf8c0fc-1c24-401a-b211-125804d62619",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "GigaChat/GigaChat-2-Max",
+          "mode": "list",
+          "cachedResultName": "GigaChat/GigaChat-2-Max"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        80
+      ],
+      "id": "c2a46fd3-c1a9-472e-93c7-9edf31ff4590",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "GTKTII4CN77IDBBJ",
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-1003467362554",
+        "text": "={{ $json.output }}\n\n\n\n\n\n\n\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        -128
+      ],
+      "id": "be840d19-c095-43fa-b1a1-898e5c3f1d3d",
+      "name": "Telegram",
+      "webhookId": "820eb3a9-0a4f-43a5-9c0e-dcb45f5f71b4",
+      "credentials": {
+        "telegramApi": {
+          "id": "s0Fyh4lvAnAnBmUL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -576,
+        -144
+      ],
+      "id": "c986cd98-018d-46f7-8c12-5f3af149ec5a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const posts = $input.all();\n\n// Группируем по каналу\nconst grouped = {};\nfor (const item of posts) {\n  const name = item.channelName || \"Без названия\";\n  if (!grouped[name]) grouped[name] = [];\n  grouped[name].push(item);\n}\n\n// Отправляем массив сгруппированных постов\nreturn {\n  posts: grouped\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        -128
+      ],
+      "id": "f6364aac-7941-4263-bd3b-19a18f63208e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "https://fetchrss.com/feed/1vOa9LBJfCPq1vOaBC4vn8x9.rss",
+        "options": {
+          "ignoreSSL": false
+        }
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -896,
+        -128
+      ],
+      "id": "8a889c77-2541-4995-9dbd-ac118760eb9a",
+      "name": "Testlab QA"
+    },
+    {
+      "parameters": {
+        "url": "https://fetchrss.com/feed/1vOa9LBJfCPq1vOaBjEfRAiJ.rss",
+        "options": {
+          "ignoreSSL": false
+        }
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -896,
+        80
+      ],
+      "id": "72156baa-59c2-4d50-8d67-0225c9c2c6c9",
+      "name": "Hiamedia"
+    },
+    {
+      "parameters": {
+        "url": "https://fetchrss.com/feed/1vOa9LBJfCPq1vOdVB9GIEZW.rss",
+        "options": {
+          "ignoreSSL": false
+        }
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -896,
+        -336
+      ],
+      "id": "c4f67d6f-7d98-4db4-ad29-2e842aaabf4c",
+      "name": "School 21"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Testlab QA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "School 21",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Hiamedia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Testlab QA": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Hiamedia": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        []
+      ]
+    },
+    "School 21": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6bb818ec-4541-46ed-929d-258ca2a55d1a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0f81146710bdf4632469143d2c8720eb23efc1946ae644ae48a05cce89faa924"
+  },
+  "id": "31vppzRwywSrCivf",
+  "tags": []
+}
